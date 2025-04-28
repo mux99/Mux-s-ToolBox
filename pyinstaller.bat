@@ -1,0 +1,1 @@
+C:\Users\maxime.dourov\AppData\Roaming\Python\Python313\Scripts\pyinstaller.exe --onefile --noconsole --add-binary="icon.ico":"icon.ico" --icon="icon.ico" %*

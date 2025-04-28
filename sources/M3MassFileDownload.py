@@ -2,7 +2,7 @@ from selenium import webdriver
 from os import getenv
 from dotenv import load_dotenv
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
 from time import sleep
 import requests, urllib3
 
@@ -46,7 +46,7 @@ def get_cookies_from_selenium():
         session_cookies[cookie['name']] = cookie['value']
     return session_cookies
 
-def downloadFile(fileID="0", type="ADL"):
+def downloadFile(fileID="0", type="ADL", out_path="out"):
     url = ''
     match type:
         case "ADL":
@@ -56,33 +56,41 @@ def downloadFile(fileID="0", type="ADL"):
         case "Fact Achat":
             url = f"https://portailm3.scabel.lan:9543/ca/api/items/search/item/resource/stream?$query=/Facture_Interco[@CINO=%22{fileID}%22]"
 
-    session_cookies = get_cookies_from_selenium()
-
     headers = {
         "User-Agent": "Mozilla/5.0",
     }
-
+    ok = False
     with requests.Session() as session:
         session.cookies.update(session_cookies)
         response = session.get(url, headers=headers, stream=True, verify=False)
-        print(response)
         if response.status_code == 200:
-            filename = f"out/{fileID}.pdf"
+            filename = f"{out_path}/{response.headers["Content-Disposition"].split('"')[1]}"
             with open(filename, "wb") as f:
                 for chunk in response.iter_content(1024):
                     f.write(chunk)
             print(f"Downloaded {filename}")
+            ok = True
         else:
             print(f"Failed to download {fileID}: HTTP {response.status_code}")
+            ok = False
+    return ok
 
 def start():
+    out_dir = filedialog.askdirectory(title="select output folder")
     if not 'selection' in globals():
-        return()
-    global browser
+        return
+    global browser, session_cookies
     browser = webdriver.Firefox(options=options) 
     login()
+    session_cookies = get_cookies_from_selenium()
+    browser.close()
+    errors=[]
     for id in textInput.get(1.0, "end-1c").strip().split("\n"):
-        downloadFile(id.strip(), selection)
+        if (not downloadFile(id.strip(), selection)):
+            errors.append(id)
+    with open("errors.txt", "w") as file:
+        file.write(str(errors)[1:-1].replace(',','\n'))
+    w.destroy()
 
 def select(event):
     global selection

@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, HORIZONTAL
 from csv_data import CSV_Data
 from fcts import open_csv, save_csv
+import icon_b64
 from time import time
 import multiprocessing
 
@@ -14,24 +15,25 @@ class App():
         self.__root = tk.Tk()
         self.__root.title("CSV Table Viewer")
         self.__root.geometry("800x400")
+        self.__root.wm_iconphoto(True, icon_b64.get_icon())
 
         self.__btn_frame = tk.Frame(self.__root)
         self.__btn_frame.pack(pady=10)
 
-        tk.Button(self.__btn_frame, text="📂- Open CSV", command=lambda: self.open_csv()).pack(side="left", padx=5)
-        tk.Button(self.__btn_frame, text="📄- Export Columns", command=self.export_column_popup).pack(side="left", padx=5)
-        tk.Button(self.__btn_frame, text="🗑- Remove Dupes", command=self.remove_dupes).pack(side="left", padx=5)
-        tk.Button(self.__btn_frame, text="🔍- Search", command=self.search_popup).pack(side="left", padx=5)
-        tk.Button(self.__btn_frame, text="💾- Save CSV", command=lambda: save_csv(self.data.data)).pack(side="left", padx=5)
+        ttk.Button(self.__btn_frame, text="📂- Open CSV", command=lambda: self.open_csv()).pack(side="left", padx=5)
+        ttk.Button(self.__btn_frame, text="📄- Export Columns", command=self.export_column_popup).pack(side="left", padx=5)
+        ttk.Button(self.__btn_frame, text="🗑- Remove Dupes", command=self.remove_dupes).pack(side="left", padx=5)
+        ttk.Button(self.__btn_frame, text="🔍- Search", command=self.search_popup).pack(side="left", padx=5)
+        ttk.Button(self.__btn_frame, text="💾- Save CSV", command=lambda: save_csv(self.data.data)).pack(side="left", padx=5)
 
-        self.__frame = tk.Frame(self.__root)
+        self.__frame = ttk.Frame(self.__root)
         self.__frame.pack(expand=True, fill="both")
 
-        tk.Frame(self.__frame, width=15).pack(side="left", fill="y")
+        ttk.Frame(self.__frame, width=15).pack(side="left", fill="y")
 
-        x_scroll = tk.Scrollbar(self.__frame, orient="horizontal")
+        x_scroll = ttk.Scrollbar(self.__frame, orient="horizontal")
         x_scroll.pack(side="bottom", fill="x")
-        y_scroll = tk.Scrollbar(self.__frame, orient="vertical")
+        y_scroll = ttk.Scrollbar(self.__frame, orient="vertical")
         y_scroll.pack(side="right", fill="y")
 
         self.__tree = ttk.Treeview(self.__frame, show="headings", xscrollcommand=x_scroll.set, yscrollcommand=y_scroll.set)
@@ -131,6 +133,7 @@ class App():
         context_menu.add_cascade(label="Randomize Column", menu=context_menu_2)
         context_menu.add_command(label="Delete column", command=lambda: self.data.delete_column(column))
         context_menu.add_command(label="Show DISTINCT", command=lambda: self.show_distinct(column))
+        context_menu.add_command(label="Sum", command=lambda: self.sum_popup(column))
 
         context_menu.post(event.x_root, event.y_root)
 
@@ -237,6 +240,11 @@ class App():
         text_area.config(state="disabled")
 
         close_btn = ttk.Button(popup, text="Close", command=popup.destroy); close_btn.pack(pady=5)
+
+    
+    def sum_popup(self, col):
+        total = self.data.sum_column(col)
+        messagebox.showinfo(title="Success", message=f"total: {total}")
 
 
 # -------------------------------------------------------------------------------------------------

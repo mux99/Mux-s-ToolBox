@@ -2,6 +2,18 @@ import random
 import rstr
 import re
 
+def convert_value(val):
+            try:
+                return int(val)
+            except ValueError:
+                try:
+                    return float(val)
+                except ValueError:
+                    if val == "":
+                        return 0
+                    else:
+                        return val
+
 
 class CSV_Data():
     def __init__(self, data: list=None, pb_tick=lambda: None, show=lambda: None):
@@ -42,23 +54,22 @@ class CSV_Data():
 
 
     def sort_column(self, col, descending):
-        def convert_value(val):
-            try:
-                return int(val)
-            except ValueError:
-                try:
-                    return float(val)
-                except ValueError:
-                    if val == "":
-                        return 0
-                    else:
-                        return val
         if self.isEmpty():
             return
         tmp_data = [(convert_value(self.data[i][col]), i) for i in range(1, len(self.data)-1)]
         tmp_data.sort(reverse=descending)
         self.data = [self.data[0]] + [self.data[ln[1]] for ln in tmp_data]
         self.show()
+
+
+    def sum_column(self,col):
+        if self.isEmpty():
+            return
+        total = 0
+        for i, line in enumerate(self.data):
+            self.pb_tick()
+            total += convert_value(line[col])
+        return total
 
 
     def delete_column(self, col):
